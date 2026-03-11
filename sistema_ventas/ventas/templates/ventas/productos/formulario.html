@@ -1,0 +1,54 @@
+{% extends "ventas/base.html" %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>{{ titulo }}</h1>
+    
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            {{ form.nombre.label_tag }}
+            {{ form.nombre }}
+        </div>
+        
+        <div class="mb-3">
+            {{ form.descripcion.label_tag }}
+            {{ form.descripcion }}
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.precio.label_tag }}
+                {{ form.precio }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.stock.label_tag }}
+                {{ form.stock }}
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            {{ form.categoria.label_tag }}
+            {{ form.categoria }}
+        </div>
+        
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+        
+        <div class="row">
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+            <div class="col-md-2">
+                <a href="{% url 'lista_productos' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

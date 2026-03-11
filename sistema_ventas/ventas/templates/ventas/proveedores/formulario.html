@@ -1,0 +1,112 @@
+{% extends "ventas/base.html" %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">{{ titulo }}</h1>
+    
+    <a href="{% url 'lista_proveedores' %}" class="btn btn-secondary mb-3">Volver</a>
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Información General -->
+                <h5 class="mb-3">Información General</h5>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.nombre.label }}</label>
+                        {{ form.nombre }}
+                        {% if form.nombre.errors %}
+                            <div class="invalid-feedback d-block">{{ form.nombre.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.telefono.label }}</label>
+                        {{ form.telefono }}
+                        {% if form.telefono.errors %}
+                            <div class="invalid-feedback d-block">{{ form.telefono.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">{{ form.pagina_web.label }}</label>
+                        {{ form.pagina_web }}
+                        {% if form.pagina_web.errors %}
+                            <div class="invalid-feedback d-block">{{ form.pagina_web.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Dirección -->
+                <hr class="my-4">
+                <h5 class="mb-3">Dirección</h5>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.calle.label }}</label>
+                        {{ form.calle }}
+                        {% if form.calle.errors %}
+                            <div class="invalid-feedback d-block">{{ form.calle.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.colonia.label }}</label>
+                        {{ form.colonia }}
+                        {% if form.colonia.errors %}
+                            <div class="invalid-feedback d-block">{{ form.colonia.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.codigo_postal.label }}</label>
+                        {{ form.codigo_postal }}
+                        {% if form.codigo_postal.errors %}
+                            <div class="invalid-feedback d-block">{{ form.codigo_postal.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.ciudad.label }}</label>
+                        {{ form.ciudad }}
+                        {% if form.ciudad.errors %}
+                            <div class="invalid-feedback d-block">{{ form.ciudad.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+                
+                <hr class="my-4">
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Guardar
+                    </button>
+                    <a href="{% url 'lista_proveedores' %}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    input, select {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-size: 14px;
+        width: 100%;
+    }
+</style>
+{% endblock %}

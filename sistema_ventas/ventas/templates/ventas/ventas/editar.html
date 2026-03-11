@@ -1,0 +1,238 @@
+{% extends 'ventas/base.html' %}
+
+{% block title %}Editar Venta{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Editar Venta #{{ venta.id }}</h1>
+    
+    <a href="{% url 'detalle_venta' venta.id %}" class="btn btn-secondary mb-3">Ver Detalles</a>
+    <a href="{% url 'lista_ventas' %}" class="btn btn-secondary mb-3">Volver</a>
+    
+    <div class="row">
+        <!-- Panel Izquierdo: Información de Venta -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Información de la Venta</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Cliente:</strong> {{ venta.cliente.nombre }}</p>
+                    <p><strong>Fecha:</strong> {{ venta.fecha|date:"d/m/Y H:i" }}</p>
+                    <p><strong>Estado:</strong> 
+                        {% if detalles %}
+                            <span class="badge bg-success">Con Productos</span>
+                        {% else %}
+                            <span class="badge bg-warning">Vacía</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Agregar Producto -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Agregar Producto</h5>
+                </div>
+                <div class="card-body">
+                    <form id="formAgregarProducto">
+                        {% csrf_token %}
+                        <input type="hidden" id="ventaId" value="{{ venta.id }}">
+                        
+                        <div class="mb-3">
+                            <label for="producto" class="form-label">Producto</label>
+                            <select id="producto" name="producto" class="form-select" required>
+                                <option value="">-- Seleccionar Producto --</option>
+                                {% for producto in productos %}
+                                    <option value="{{ producto.id }}" data-stock="{{ producto.stock }}" data-precio="{{ producto.precio }}">
+                                        {{ producto.nombre }} (Stock: {{ producto.stock }}, Precio: ${{ producto.precio }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted" id="stockInfo"></small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="cantidad" class="form-label">Cantidad</label>
+                            <input type="number" id="cantidad" name="cantidad" class="form-control" value="1" min="1" required>
+                            <small class="text-muted">Stock disponible: <span id="stockDisponible">-</span></small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-plus-circle"></i> Agregar al Carrito
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panel Derecho: Carrito/Detalles -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Productos en la Venta</h5>
+                </div>
+                <div class="card-body">
+                    {% if detalles %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio</th>
+                                        <th>Subtotal</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for detalle in detalles %}
+                                    <tr class="detalle-row" data-detalle-id="{{ detalle.id }}">
+                                        <td>{{ detalle.producto.nombre }}</td>
+                                        <td>{{ detalle.cantidad }}</td>
+                                        <td>${{ detalle.precio_unitario }}</td>
+                                        <td><strong>${{ detalle.subtotal }}</strong></td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-danger btn-eliminar" 
+                                                    data-detalle-id="{{ detalle.id }}">
+                                                Eliminar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Total:</h5>
+                            <h4 class="text-success"><strong id="totalVenta">${{ venta.total }}</strong></h4>
+                        </div>
+                        
+                        <form method="POST" action="{% url 'guardar_venta' venta.id %}" class="mb-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-check-circle"></i> Confirmar Venta
+                            </button>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            No hay productos agregados a esta venta. Agregue al menos uno para continuar.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const formAgregarProducto = document.getElementById('formAgregarProducto');
+    const productoSelect = document.getElementById('producto');
+    const cantidadInput = document.getElementById('cantidad');
+    const ventaId = document.getElementById('ventaId').value;
+    const stockDisponible = document.getElementById('stockDisponible');
+    
+    // Actualizar stock disponible cuando se selecciona producto
+    productoSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const stock = selectedOption.getAttribute('data-stock');
+        if (stock) {
+            stockDisponible.textContent = stock;
+            cantidadInput.max = stock;
+        } else {
+            stockDisponible.textContent = '-';
+        }
+    });
+    
+    // Agregar producto al carrito
+    formAgregarProducto.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const productoId = productoSelect.value;
+        const cantidad = cantidadInput.value;
+        
+        if (!productoId) {
+            alert('Por favor selecciona un producto');
+            return;
+        }
+        
+        if (cantidad < 1) {
+            alert('La cantidad debe ser mayor a 0');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/ventas/${ventaId}/agregar-producto/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    producto_id: productoId,
+                    cantidad: cantidad
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Actualizar la página
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'No se pudo agregar el producto'));
+            }
+        } catch (error) {
+            alert('Error al agregar producto: ' + error.message);
+        }
+    });
+    
+    // Eliminar detalle
+    document.querySelectorAll('.btn-eliminar').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const detalleId = this.getAttribute('data-detalle-id');
+            
+            if (!confirm('¿Está seguro de que desea eliminar este producto?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/ventas/detalle/${detalleId}/eliminar/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'No se pudo eliminar el producto'));
+                }
+            } catch (error) {
+                alert('Error al eliminar producto: ' + error.message);
+            }
+        });
+    });
+});
+</script>
+
+<style>
+    select, input {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'ventas/base.html' %}
+
+{% block title %}Confirmar Eliminación de Venta{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Confirmar Eliminación</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Advertencia:</strong> Está a punto de eliminar la venta #{{ venta.id }}. Esta acción no se puede deshacer.
+                    </div>
+                    
+                    <div class="card mb-3 bg-light">
+                        <div class="card-body">
+                            <p><strong>ID Venta:</strong> #{{ venta.id }}</p>
+                            <p><strong>Cliente:</strong> {{ venta.cliente.nombre }}</p>
+                            <p><strong>Fecha:</strong> {{ venta.fecha|date:"d/m/Y H:i" }}</p>
+                            <p><strong>Total:</strong> <span class="text-danger">${{ venta.total }}</span></p>
+                            <p><strong>Cantidad de Productos:</strong> {{ detalles|length }}</p>
+                        </div>
+                    </div>
+                    
+                    <p>¿Está seguro de que desea eliminar esta venta?</p>
+                    
+                    <form method="POST" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="confirmar" value="si">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Sí, Eliminar
+                        </button>
+                    </form>
+                    
+                    <a href="{% url 'lista_ventas' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

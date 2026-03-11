@@ -1,9 +1,8 @@
 from django.contrib import admin
+from .infrastructure.django_models import ClienteModel, ProveedorModel, ProductoModel, VentaModel, DetalleVentaModel
 
-# Register your models here.
-from .models import Cliente, Producto, Venta, DetalleVenta
-
-admin.site.register(Cliente)
-admin.site.register(Producto)
-admin.site.register(Venta)
-admin.site.register(DetalleVenta)
+admin.site.register(ClienteModel)
+admin.site.register(ProveedorModel)
+admin.site.register(ProductoModel)
+admin.site.register(VentaModel)
+admin.site.register(DetalleVentaModel)
